@@ -43,5 +43,13 @@ public class MapperProfile : Profile
         CreateMap<EmployeeRequestDto, Employee>();
         CreateMap<RegisterRequestDto, Employee>();
         CreateMap<Employee, EmployeeResponseDto>();
+        CreateMap<Employee, EmployeeDetailResponseDto>()
+           .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.GetFullName()))
+           .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+           .ForMember(dest => dest.ManagerNik, opt => opt.MapFrom(src => src.Manager.Nik))
+           .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager.GetFullName()))
+           .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.Job.Title))
+           .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Department.Name))
+           .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Department.Location.City));
     }
 }

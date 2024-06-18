@@ -14,6 +14,13 @@ public class EmployeeController : BaseController
         _employeeService = employeeService;
     }
 
+    [HttpGet("Details")]
+    public async Task<IActionResult> GetAllEmployeeDetailAsync([FromQuery]EmployeeDetailRequestDto requestDto)
+    {
+        var result = await _employeeService.GetEmployeeDetails(requestDto);
+        return Ok(new DataPaginationResponseDto<EmployeeDetailResponseDto>(StatusCodes.Status200OK, "Data found.", requestDto.PageIndex,requestDto.PageSize, result.count , result.mapEmployeeDetail));
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAllEmployeeAsync()
     {

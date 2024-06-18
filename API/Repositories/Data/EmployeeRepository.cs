@@ -1,6 +1,7 @@
 using API.Data;
 using API.Models;
 using API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Data;
 
@@ -28,5 +29,14 @@ public class EmployeeRepository : GeneralRepository<Employee>, IEmployeeReposito
     public Task<Employee?> CheckEmailEmployee(string email)
     {
         return Task.FromResult(_context.Employees.SingleOrDefault(employee => employee.Email.Contains(email)));
+    }
+
+    public async Task<IEnumerable<Employee>> GetDetailAsync()
+    {
+        return await _context.Employees
+                             .Include(e => e.User)
+                             .Include(e => e.Job)
+                             .Include(e => e.Department)
+                             .Include(e => e.Department!.Location).ToListAsync();
     }
 }

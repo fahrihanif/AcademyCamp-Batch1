@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using API.DTOs.Requests;
 using API.DTOs.Responses;
 using API.Models;
@@ -76,5 +77,54 @@ public class EmployeeService : GeneralService<IEmployeeRepository, EmployeeReque
         await _transactionRepository.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<(IEnumerable<EmployeeDetailResponseDto> mapEmployeeDetail, int count)> GetEmployeeDetails(EmployeeDetailRequestDto request)
+    {
+        if (request.PageIndex < 1)
+        {
+            throw new ArgumentException("'PageIndex can't below than 1'");
+        }
+        
+        var employeeDetails = await _repository.GetDetailAsync() ?? throw new NullReferenceException("Employee detail is empty.");
+
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            employeeDetails = employeeDetails.Where(e => e.FirstName.Contains(request.Search) 
+                                                      || e.LastName.Contains(request.Search));
+        }
+
+        if (request.IsDescending)
+        {
+            //employeeDetails = employeeDetails.OrderByDescending(GetPropertyValue(request));
+        }
+        else
+        {
+            //employeeDetails = employeeDetails.OrderBy(GetPropertyValue(request));
+        }
+
+        var employeeCount = employeeDetails.Count();
+        employeeDetails = employeeDetails.Skip((request.PageIndex - 1) * request.PageSize)
+                                         .Take(request.PageSize);
+
+        var mapEmployeeDetail = _mapper.Map<IEnumerable<EmployeeDetailResponseDto>>(employeeDetails);
+        return (mapEmployeeDetail, employeeCount);
+    }
+
+    private static Expression<Func<Employee, object>> GetPropertyValue(EmployeeDetailRequestDto request)
+    {
+        Expression<Func<Employee, object>> keySelector = request.SortColumn?.ToLower()
+            switch {
+                "fullname" => e => e.GetFullName(),
+                "email" => e => e.Email,
+                "username" => e => e.User!.UserName,
+                "phonenumber" => e => e.PhoneNumber,
+                "hiredate" => e => e.HireDate,
+                "salary" => e => e.Salary,
+                "comissionpct" => e => e.ComissionPct,
+                _ => e => e.Nik
+            };
+
+        return keySelector;
     }
 }

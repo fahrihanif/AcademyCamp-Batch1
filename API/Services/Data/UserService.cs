@@ -68,8 +68,7 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
             var job = await _jobRepository.GetByIdAsync(request.JobId);
             _transactionRepository.ChangeTrackerClear();
             if (job != null && (request.Salary < job.MinSalary || request.Salary > job.MaxSalary))
-                throw new
-                    ArgumentException($"'Salary' cannot be lower than {job.MinSalary} and greater than {job.MaxSalary}.");
+                throw new ArgumentException($"'Salary' cannot be lower than {job.MinSalary} and greater than {job.MaxSalary}.");
 
             var mapEmployee = _mapper.Map<Employee>(request);
             mapEmployee.Nik = GenerateHandler.Nik(await _employeeRepository.GetLastNik());

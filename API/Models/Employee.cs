@@ -4,6 +4,10 @@ namespace API.Models;
 
 public class Employee : BaseEntity
 {
+    public string GetFullName()
+    {
+        return string.Concat(FirstName, " ", LastName);
+    }
     [MaxLength(6)] public string Nik { get; set; } = string.Empty;
 
     [MaxLength(50)] public string FirstName { get; set; } = string.Empty;

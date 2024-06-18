@@ -36,8 +36,8 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("EmployeeConnectionProd");
-builder.Services.AddDbContext<EmployeeDbContext>(option => option.UseSqlServer(connectionString));
+var connectionString = builder.Configuration.GetConnectionString("EmployeeConnection");
+builder.Services.AddDbContext<EmployeeDbContext>(option => option.UseSqlServer(connectionString, cfg => cfg.EnableRetryOnFailure()));
 
 // Repository Configuration
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();

@@ -6,5 +6,7 @@ namespace API.Services.Interfaces;
 public interface IUserService : IGeneralService<UserRequestDto, UserResponseDto>
 {
     Task RegisterUserAsync(RegisterRequestDto request);
-    Task LoginUserAsync(LoginRequestDto request);
+    Task<string> LoginUserAsync(LoginRequestDto request);
+    Task AddUserRoleAsync(UserRoleRequestDto requestDto);
+    Task RemoveUserRoleAsync(UserRoleRequestDto requestDto);
 }

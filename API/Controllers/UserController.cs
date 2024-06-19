@@ -1,10 +1,13 @@
 using API.DTOs.Requests;
 using API.DTOs.Responses;
 using API.Services.Interfaces;
+using API.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[Authorize(Roles = RoleHandler.Admin)]
 public class UserController : BaseController
 {
     private readonly IUserService _userService;
@@ -14,14 +17,32 @@ public class UserController : BaseController
         _userService = userService;
     }
 
+    [HttpPost("AddRole")]
+    public async Task<IActionResult> AddUserRole(UserRoleRequestDto requestDto)
+    {
+        await _userService.AddUserRoleAsync(requestDto);
+        
+        return Ok(new MessageResponseDto(StatusCodes.Status200OK, "New role added to the user."));
+    }
+    
+    [HttpDelete("RemoveRole")]
+    public async Task<IActionResult> RemoveUserRole(UserRoleRequestDto requestDto)
+    {
+        await _userService.RemoveUserRoleAsync(requestDto);
+        
+        return Ok(new MessageResponseDto(StatusCodes.Status200OK, "Role removed to the user."));
+    }
+
+    [AllowAnonymous]
     [HttpPost("Login")]
     public async Task<IActionResult> LoginUserAsync(LoginRequestDto requestDto)
     {
-        await _userService.LoginUserAsync(requestDto);
+        var result = await _userService.LoginUserAsync(requestDto);
 
-        return Ok(new MessageResponseDto(StatusCodes.Status200OK, "Login user is success."));
+        return Ok(new SingleResponseDto<string>(StatusCodes.Status200OK, "Login user is success.", result));
     }
 
+    [AllowAnonymous]
     [HttpPost("Register")]
     public async Task<IActionResult> RegisterUserAsync(RegisterRequestDto requestDto)
     {

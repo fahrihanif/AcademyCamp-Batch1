@@ -40,6 +40,8 @@ public class MapperProfile : Profile
            .ForMember(dest => dest.ExpiredOtp, opt => opt.MapFrom(_ => DateTime.Now))
            .ForMember(dest => dest.IsOtpUsed, opt => opt.MapFrom(_ => true));
 
+        CreateMap<UserRoleRequestDto, UserRole>();
+
         CreateMap<EmployeeRequestDto, Employee>();
         CreateMap<RegisterRequestDto, Employee>();
         CreateMap<Employee, EmployeeResponseDto>();

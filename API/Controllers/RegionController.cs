@@ -1,10 +1,12 @@
 using API.DTOs.Requests;
 using API.DTOs.Responses;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[Authorize]
 public class RegionController : BaseController
 {
     private readonly IRegionService _regionService;

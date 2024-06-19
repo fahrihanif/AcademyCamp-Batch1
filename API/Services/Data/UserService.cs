@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using API.DTOs.Requests;
 using API.DTOs.Responses;
 using API.Models;
@@ -15,11 +16,12 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
     private readonly IJobRepository _jobRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
+    private readonly ITokenHandler _tokenHandler;
 
     public UserService(IUserRepository repository, IMapper mapper, ITransactionRepository transactionRepository,
                        IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository,
                        IJobRepository jobRepository, IUserRoleRepository userRoleRepository,
-                       IRoleRepository roleRepository) :
+                       IRoleRepository roleRepository, ITokenHandler tokenHandler) :
         base(repository, mapper, transactionRepository)
     {
         _employeeRepository = employeeRepository;
@@ -27,9 +29,10 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
         _jobRepository = jobRepository;
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
+        _tokenHandler = tokenHandler;
     }
 
-    public async Task LoginUserAsync(LoginRequestDto request)
+    public async Task<string> LoginUserAsync(LoginRequestDto request)
     {
         var employee = await _employeeRepository.CheckEmailEmployee(request.EmailOrUsername);
         _transactionRepository.ChangeTrackerClear();
@@ -42,6 +45,42 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
 
         if (!HashPasswordHandler.VerifyPassword(request.Password, user!.Password))
             throw new NullReferenceException("Email/UserName and Password is not found");
+
+        var claims = new List<Claim> {
+            new("nik", employee.Nik),
+            new("name", employee.GetFullName()),
+            new("email", employee.Email)
+        };
+        var userRole = await _userRoleRepository.GetRoleByEmployeeIdAsync(employee.Id);
+        claims.AddRange(userRole.Select(item => new Claim(ClaimTypes.Role, item)));
+        var token = _tokenHandler.Access(claims);
+        
+        return token;
+    }
+
+    public async Task AddUserRoleAsync(UserRoleRequestDto requestDto)
+    {
+        await CheckNullReference(requestDto.EmployeeId, _employeeRepository, nameof(requestDto.EmployeeId));
+        await CheckNullReference(requestDto.RoleId, _roleRepository, nameof(requestDto.RoleId));
+
+        var toEntity = _mapper.Map<UserRole>(requestDto);
+        await _userRoleRepository.CreateAsync(toEntity);
+        await _transactionRepository.SaveChangesAsync();
+    }
+
+    public async Task RemoveUserRoleAsync(UserRoleRequestDto requestDto)
+    {
+        await CheckNullReference(requestDto.EmployeeId, _employeeRepository, nameof(requestDto.EmployeeId));
+        await CheckNullReference(requestDto.RoleId, _roleRepository, nameof(requestDto.RoleId));
+
+        var userRole = await _userRoleRepository.GetUserRoleIdByEmployeeIdRoleId(requestDto.EmployeeId, requestDto.RoleId);
+        if (userRole is null)
+        {
+            throw new NullReferenceException("User did not have the role.");
+        }
+        
+        _userRoleRepository.Delete(userRole);
+        await _transactionRepository.SaveChangesAsync();
     }
 
     public async Task RegisterUserAsync(RegisterRequestDto request)

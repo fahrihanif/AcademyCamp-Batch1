@@ -17,12 +17,14 @@ public class UserController : BaseController
         _userService = userService;
     }
 
+    [AllowAnonymous]
     [HttpPost("GenerateOtp")]
     public Task<IActionResult> GenerateOtpAsync(GenerateOtpRequestDto requestDto)
     {
         throw new NotImplementedException();
     }
     
+    [AllowAnonymous]
     [HttpPost("ForgotPassword")]
     public Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
     {

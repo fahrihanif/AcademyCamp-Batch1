@@ -16,6 +16,7 @@ public class CountryController : BaseController
         _countryService = countryService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllCountryAsync()
     {

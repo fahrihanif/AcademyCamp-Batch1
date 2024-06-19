@@ -16,6 +16,7 @@ public class DepartmentController : BaseController
         _departmentService = departmentService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllDepartmentAsync()
     {

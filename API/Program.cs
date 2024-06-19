@@ -68,10 +68,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("EmployeeConnection");
+var connectionString = Environment.GetEnvironmentVariable("EmployeeConnectionProd") ?? builder.Configuration.GetConnectionString("EmployeeConnection");
 builder.Services.AddDbContext<EmployeeDbContext>(option =>
-                                                     option.UseSqlServer(connectionString,
-                                                                         cfg => cfg.EnableRetryOnFailure()));
+                                                     option.UseSqlServer(connectionString));
 
 // Repository Configuration
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -127,6 +126,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             };
         });
 
+// CORS Configuration
+builder.Services.AddCors(cfg => cfg.AddDefaultPolicy(policy =>
+{
+    policy.AllowAnyOrigin();
+    policy.AllowAnyHeader();
+    policy.AllowAnyMethod();
+}));
+
 var app = builder.Build();
 
 await using var scope = app.Services.CreateAsyncScope();
@@ -137,6 +144,8 @@ if (db != null) await db.Database.MigrateAsync();
 app.UseSwagger();
 
 app.UseSwaggerUI();
+
+app.UseCors();
 
 app.UseExceptionHandler(_ => { });
 

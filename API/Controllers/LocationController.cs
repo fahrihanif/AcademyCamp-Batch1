@@ -16,6 +16,7 @@ public class LocationController : BaseController
         _locationService = locationService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllLocationAsync()
     {

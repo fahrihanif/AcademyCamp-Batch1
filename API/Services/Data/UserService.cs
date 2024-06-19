@@ -38,16 +38,16 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
         _transactionRepository.ChangeTrackerClear();
         var user = await _repository.CheckUserNameUser(request.EmailOrUsername);
         _transactionRepository.ChangeTrackerClear();
-        if (user is null && employee is null)
-            throw new NullReferenceException("Email/UserName and Password is not found");
-
-        if (user is null)
+        switch (user)
         {
-            user = await _repository.GetByIdAsync(employee!.Id);
-        }
-        else
-        {
-            employee = await _employeeRepository.GetByIdAsync(user.EmployeeId);
+            case null when employee is null:
+                throw new NullReferenceException("Email/UserName and Password is not found");
+            case null:
+                user = await _repository.GetByIdAsync(employee.Id);
+                break;
+            default:
+                employee = await _employeeRepository.GetByIdAsync(user.EmployeeId);
+                break;
         }
 
         if (!HashPasswordHandler.VerifyPassword(request.Password, user!.Password))

@@ -16,6 +16,7 @@ public class RoleController : BaseController
         _roleService = roleService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllRoleAsync()
     {

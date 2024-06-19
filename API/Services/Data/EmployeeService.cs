@@ -116,11 +116,11 @@ public class EmployeeService : GeneralService<IEmployeeRepository, EmployeeReque
         Expression<Func<Employee, object>> keySelector = request.SortColumn?.ToLower() switch {
             "fullname" => e => e.FirstName,
             "email" => e => e.Email,
-            "username" => e => e.User.UserName,
+            "username" => e => e.User!.UserName,
             "phonenumber" => e => e.PhoneNumber,
             "hiredate" => e => e.HireDate,
             "salary" => e => e.Salary,
-            "comissionpct" => e => e.ComissionPct,
+            "comissionpct" => e => e.ComissionPct ?? 0,
             _ => e => e.Nik
         };
 

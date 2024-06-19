@@ -16,6 +16,7 @@ public class JobController : BaseController
         _jobService = jobService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllJobAsync()
     {

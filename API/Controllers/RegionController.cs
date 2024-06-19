@@ -16,6 +16,7 @@ public class RegionController : BaseController
         _regionService = regionService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllRegionAsync()
     {

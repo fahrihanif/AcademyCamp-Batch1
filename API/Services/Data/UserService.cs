@@ -41,7 +41,14 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
         if (user is null && employee is null)
             throw new NullReferenceException("Email/UserName and Password is not found");
 
-        if (user is null) user = await _repository.GetByIdAsync(employee!.Id);
+        if (user is null)
+        {
+            user = await _repository.GetByIdAsync(employee!.Id);
+        }
+        else
+        {
+            employee = await _employeeRepository.GetByIdAsync(user.EmployeeId);
+        }
 
         if (!HashPasswordHandler.VerifyPassword(request.Password, user!.Password))
             throw new NullReferenceException("Email/UserName and Password is not found");

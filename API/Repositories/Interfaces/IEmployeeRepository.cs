@@ -8,5 +8,5 @@ public interface IEmployeeRepository : IGeneralRepository<Employee>
     Task<bool> IsEmailExist(string email);
     Task<bool> IsPhoneNumberExist(string phoneNumber);
     Task<Employee?> CheckEmailEmployee(string email);
-    Task<IEnumerable<Employee>> GetDetailAsync();
+    Task<IQueryable<Employee>> GetDetailAsync();
 }

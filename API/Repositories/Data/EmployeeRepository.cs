@@ -31,12 +31,12 @@ public class EmployeeRepository : GeneralRepository<Employee>, IEmployeeReposito
         return Task.FromResult(_context.Employees.SingleOrDefault(employee => employee.Email.Contains(email)));
     }
 
-    public async Task<IEnumerable<Employee>> GetDetailAsync()
+    public Task<IQueryable<Employee>> GetDetailAsync()
     {
-        return await _context.Employees
-                             .Include(e => e.User)
-                             .Include(e => e.Job)
-                             .Include(e => e.Department)
-                             .Include(e => e.Department!.Location).ToListAsync();
+        return Task.FromResult<IQueryable<Employee>>(_context.Employees
+                                                             .Include(e => e.User)
+                                                             .Include(e => e.Job)
+                                                             .Include(e => e.Department)
+                                                             .Include(e => e.Department!.Location));
     }
 }

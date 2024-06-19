@@ -96,11 +96,11 @@ public class EmployeeService : GeneralService<IEmployeeRepository, EmployeeReque
 
         if (request.IsDescending)
         {
-            //employeeDetails = employeeDetails.OrderByDescending(GetPropertyValue(request));
+            employeeDetails = employeeDetails.OrderByDescending(GetPropertyValue(request));
         }
         else
         {
-            //employeeDetails = employeeDetails.OrderBy(GetPropertyValue(request));
+            employeeDetails = employeeDetails.OrderBy(GetPropertyValue(request));
         }
 
         var employeeCount = employeeDetails.Count();
@@ -113,17 +113,16 @@ public class EmployeeService : GeneralService<IEmployeeRepository, EmployeeReque
 
     private static Expression<Func<Employee, object>> GetPropertyValue(EmployeeDetailRequestDto request)
     {
-        Expression<Func<Employee, object>> keySelector = request.SortColumn?.ToLower()
-            switch {
-                "fullname" => e => e.GetFullName(),
-                "email" => e => e.Email,
-                "username" => e => e.User!.UserName,
-                "phonenumber" => e => e.PhoneNumber,
-                "hiredate" => e => e.HireDate,
-                "salary" => e => e.Salary,
-                "comissionpct" => e => e.ComissionPct,
-                _ => e => e.Nik
-            };
+        Expression<Func<Employee, object>> keySelector = request.SortColumn?.ToLower() switch {
+            "fullname" => e => e.FirstName,
+            "email" => e => e.Email,
+            "username" => e => e.User.UserName,
+            "phonenumber" => e => e.PhoneNumber,
+            "hiredate" => e => e.HireDate,
+            "salary" => e => e.Salary,
+            "comissionpct" => e => e.ComissionPct,
+            _ => e => e.Nik
+        };
 
         return keySelector;
     }

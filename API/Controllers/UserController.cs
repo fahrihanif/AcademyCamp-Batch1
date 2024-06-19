@@ -17,6 +17,18 @@ public class UserController : BaseController
         _userService = userService;
     }
 
+    [HttpPost("GenerateOtp")]
+    public Task<IActionResult> GenerateOtpAsync(GenerateOtpRequestDto requestDto)
+    {
+        throw new NotImplementedException();
+    }
+    
+    [HttpPost("ForgotPassword")]
+    public Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
+    {
+        throw new NotImplementedException();
+    }
+
     [HttpPost("AddRole")]
     public async Task<IActionResult> AddUserRole(UserRoleRequestDto requestDto)
     {

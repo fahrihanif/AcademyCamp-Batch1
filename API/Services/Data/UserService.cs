@@ -17,11 +17,12 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly ITokenHandler _tokenHandler;
+    private readonly IEmailHandler _emailHandler;
 
     public UserService(IUserRepository repository, IMapper mapper, ITransactionRepository transactionRepository,
                        IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository,
                        IJobRepository jobRepository, IUserRoleRepository userRoleRepository,
-                       IRoleRepository roleRepository, ITokenHandler tokenHandler) :
+                       IRoleRepository roleRepository, ITokenHandler tokenHandler, IEmailHandler emailHandler) :
         base(repository, mapper, transactionRepository)
     {
         _employeeRepository = employeeRepository;
@@ -30,6 +31,7 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
         _tokenHandler = tokenHandler;
+        _emailHandler = emailHandler;
     }
 
     public async Task<string> LoginUserAsync(LoginRequestDto request)
@@ -38,17 +40,12 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
         _transactionRepository.ChangeTrackerClear();
         var user = await _repository.CheckUserNameUser(request.EmailOrUsername);
         _transactionRepository.ChangeTrackerClear();
-        switch (user)
-        {
-            case null when employee is null:
-                throw new NullReferenceException("Email/UserName and Password is not found");
-            case null:
-                user = await _repository.GetByIdAsync(employee.Id);
-                break;
-            default:
-                employee = await _employeeRepository.GetByIdAsync(user.EmployeeId);
-                break;
-        }
+        if (user == null && employee is null)
+            throw new NullReferenceException("Email/UserName and Password is not found");
+        if (user == null)
+            user = await _repository.GetByIdAsync(employee.Id);
+        else
+            employee = await _employeeRepository.GetByIdAsync(user.EmployeeId);
 
         if (!HashPasswordHandler.VerifyPassword(request.Password, user!.Password))
             throw new NullReferenceException("Email/UserName and Password is not found");
@@ -87,6 +84,50 @@ public class UserService : GeneralService<IUserRepository, UserRequestDto, UserR
         }
         
         _userRoleRepository.Delete(userRole);
+        await _transactionRepository.SaveChangesAsync();
+    }
+
+    public async Task GenerateOtpAsync(GenerateOtpRequestDto requestDto)
+    {
+        var employee = await _employeeRepository.CheckEmailEmployee(requestDto.Email);
+        if (employee is null)
+            throw new NullReferenceException("Account not found.");
+
+        var user = await _repository.GetByIdAsync(employee.Id);
+        if (user is null)
+            throw new NullReferenceException("Account not found.");
+
+        user.Otp = new Random().Next(111111, 999999);
+        user.IsOtpUsed = false;
+        user.ExpiredOtp = DateTime.Now.AddMinutes(5);
+
+        await _emailHandler.SendEmailAsync(new EmailRequestDto(employee.Email, employee.GetFullName(), "OTP - Academy Camp", $"Here is your otp: <b>{user.Otp}</b>"));
+        
+        _repository.Update(user);
+        await _transactionRepository.SaveChangesAsync();
+    }
+
+    public async Task ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
+    {
+        var employee = await _employeeRepository.CheckEmailEmployee(requestDto.EmailOrUsername);
+        _transactionRepository.ChangeTrackerClear();
+        var user = await _repository.CheckUserNameUser(requestDto.EmailOrUsername);
+        _transactionRepository.ChangeTrackerClear();
+        if (user is null && employee is null)
+            throw new NullReferenceException("Email/UserName and Password is not found");
+        if (user is null)
+            user = await _repository.GetByIdAsync(employee!.Id);
+
+        if (user.Otp != requestDto.Otp)
+            throw new ArgumentException("'Otp' is incorrect.");
+        if (user.ExpiredOtp > DateTime.Now )
+            throw new ArgumentException("'Otp' has expired.");
+        if (user!.IsOtpUsed)
+            throw new ArgumentException("'Otp' has been already used");
+        
+        user.IsOtpUsed = true;
+        user.Password = HashPasswordHandler.GenerateHash(requestDto.Password);
+        _repository.Update(user);
         await _transactionRepository.SaveChangesAsync();
     }
 

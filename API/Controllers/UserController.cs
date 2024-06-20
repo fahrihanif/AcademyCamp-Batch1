@@ -19,16 +19,20 @@ public class UserController : BaseController
 
     [AllowAnonymous]
     [HttpPost("GenerateOtp")]
-    public Task<IActionResult> GenerateOtpAsync(GenerateOtpRequestDto requestDto)
+    public async Task<IActionResult> GenerateOtpAsync(GenerateOtpRequestDto requestDto)
     {
-        throw new NotImplementedException();
+        await _userService.GenerateOtpAsync(requestDto);
+        
+        return Ok(new MessageResponseDto(StatusCodes.Status200OK, "OTP sent to your email."));
     }
     
     [AllowAnonymous]
     [HttpPost("ForgotPassword")]
-    public Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
+    public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
     {
-        throw new NotImplementedException();
+        await _userService.ForgotPasswordAsync(requestDto);
+        
+        return Ok(new MessageResponseDto(StatusCodes.Status200OK, "Password changed successfully."));
     }
 
     [HttpPost("AddRole")]

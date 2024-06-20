@@ -41,8 +41,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
         Name = "Authorization",
         Description = "Enter the Bearer Authorization string as following: `Bearer Generated-JWT-Token`",
         In = ParameterLocation.Header,
@@ -50,15 +49,12 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT"
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
         {
-            new OpenApiSecurityScheme
-            {
+            new OpenApiSecurityScheme {
                 Name = "Bearer",
                 In = ParameterLocation.Header,
-                Reference = new OpenApiReference
-                {
+                Reference = new OpenApiReference {
                     Id = "Bearer",
                     Type = ReferenceType.SecurityScheme
                 }
@@ -68,7 +64,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var connectionString = Environment.GetEnvironmentVariable("EmployeeConnectionProd") ?? builder.Configuration.GetConnectionString("EmployeeConnection");
+var connectionString = Environment.GetEnvironmentVariable("EmployeeConnectionProd") ??
+                       builder.Configuration.GetConnectionString("EmployeeConnection");
 builder.Services.AddDbContext<EmployeeDbContext>(option =>
                                                      option.UseSqlServer(connectionString));
 
@@ -105,6 +102,13 @@ builder.Services.AddFluentValidationAutoValidation()
 
 // Utilities Configuration
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddTransient<IEmailHandler, EmailHandler>(_ => new EmailHandler(builder.Configuration["EmailSettings:SMTPServer"],
+                                                                                Convert.ToInt32(builder.Configuration
+                                                                                    ["EmailSettings:SMTPPort"]),
+                                                                                builder.Configuration
+                                                                                    ["EmailSettings:MailFrom"],
+                                                                                builder.Configuration
+                                                                                    ["EmailSettings:MailName"]));
 var jwtKey = builder.Configuration["JWTService:Key"];
 var jwtIssuer = builder.Configuration["JWTService:Issuer"];
 var jwtAudience = builder.Configuration["JWTService:Audience"];
@@ -145,11 +149,11 @@ app.UseSwagger();
 
 app.UseSwaggerUI();
 
-app.UseCors();
-
 app.UseExceptionHandler(_ => { });
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthentication();
 
